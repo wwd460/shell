@@ -1,0 +1,17 @@
+#!/usr/bin/with-contenv bash
+
+run_jpanel () {
+    echo -e "\n======================== 启动控制面板 ========================\n"
+    cd ${JD_DIR}/jpanel
+    pm2 start ecosystem.config.js
+    if [[ $? -eq 0 ]]; then
+        echo -e "控制面板启动成功...\n"
+        echo -e "登录信息：$(cat ${JD_DIR}/config/auth.json)\n"
+        echo -e "请浏览器访问 http://<ip>:<你的端口> 登陆并修改配置...\n"
+        echo -e "上述 <端口> 为你映射到容器内 5678 端口的对应端口\n"
+    else
+        echo -e "控制面板启动失败，但容器将继续启动...\n"
+    fi
+}
+
+run_jpanel 2>&1 | perl -pe "s|^(.+)|[cont-init.d] $(basename $0): \1|g"

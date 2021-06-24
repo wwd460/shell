@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>bot配置</title>
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/codemirror.min.js"></script>
+    <script type="text/javascript" src="./js/comment.js"></script>
+    <script type="text/javascript" src="./js/shell.js"></script>
+    <script type="text/javascript" src="./js/sublime.js"></script>
+    <script type="text/javascript" src="./js/sweetalert2.js"></script>
+    <link rel="stylesheet" type="text/css" href="./css/codemirror.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/twilight.css">
+    <link rel="stylesheet" type="text/css" href="./css/dracula.css">
+    <link rel="stylesheet" type="text/css" href="./css/main.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="diffs">
+            <nav>
+                <ul>
+                    <li><a href="./home">配置设定</a></li>
+                    <li><a href="./crontab">定时任务</a></li>
+                    <li><a href="./sharecode">互助规则</a></li>
+                    <li><a href="./diy">jup拓展</a></li>
+                    <li><a href="./taskfinish">jtask拓展</a></li>
+                    <li class="active"><a href="./bot">bot配置</a></li>
+                    <li><a href="./shortcut">bot快捷功能</a></li>
+                    <li><a href="./log">日志查询</a></li>
+                    <li><a href="./changepwd">修改密码</a></li>
+                    <li><a href="./api/logout">退出登录</a></li>
+                </ul>
+            </nav>
+            <header>
+                <button id="save" title="保存">保存 bot.json</button>
+                <button id="wrap" title="切换换行">切换换行</button>
+                <br/>
+                <p>此处填写 bot 配置，请按注释填写对应内容，此处内容将保存在 config/bot.json </p>
+            </header>
+	    <br/>
+            <div class="wrapper">
+                <textarea id="code" name="code"></textarea>
+            </div>
+        </div>
+    </div>
+    <script>
+        $.ajaxSetup({ cache: false });
+
+        $(document).ready(function () {
+            var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+                lineNumbers: true,
+                lineWrapping: false,
+                styleActiveLine: true,
+                matchBrackets: true,
+                mode: 'shell',
+                theme: 'dracula',
+                keyMap: 'sublime'
+            });
+            $.get('./api/config/bot', function (data) {
+                editor.setValue(data);
+            });
+
+            $('#save').click(function () {
+                var confContent = editor.getValue();
+                let timeStamp = (new Date()).getTime()
+                $.post('./api/save?t='+timeStamp, { content: confContent, name: "bot.json" }, function (data) {
+                    let icon = (data.err == 0) ? "success" : "error"
+                    Swal.fire({
+                        title:data.title,
+                        text: data.msg,
+                        icon: icon
+                    }).then((result) => {
+                        window.location.reload(true);
+                    })
+                });
+            });
+
+            $('#wrap').click(function () {
+                var lineWrapping = editor.getOption('lineWrapping');
+                editor.setOption('lineWrapping', !lineWrapping);
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>
